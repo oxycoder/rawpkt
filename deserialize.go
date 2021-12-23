@@ -133,7 +133,7 @@ func (p *Packet) deserialize(fv reflect.Value) error {
 			if fv.CanSet() {
 				fv.Set(x)
 			} else {
-				fmt.Println("Can not set value for ", fv.Type())
+				return fmt.Errorf("can not set value for %s", fv.Type().String())
 			}
 		}
 		p.deserialize(fv.Elem())
@@ -150,7 +150,7 @@ func (p *Packet) deserialize(fv reflect.Value) error {
 		}
 
 	default:
-		fmt.Println("Encode unsuported reflect type", fv.Kind())
+		return fmt.Errorf("encode unsuported reflect type %s", fv.Kind().String())
 	}
 	return nil
 }

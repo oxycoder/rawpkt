@@ -2,6 +2,7 @@ package rawpkt
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"math"
 	"reflect"
@@ -11,13 +12,12 @@ import (
 // Unmarshal packet back into struct / data.
 func (p *Packet) Unmarshal(structPtr interface{}) error {
 	vp := reflect.ValueOf(structPtr)
-	p.serialize(vp)
-	return nil
+	return p.serialize(vp)
 }
 
-func (p *Packet) serialize(fv reflect.Value) {
+func (p *Packet) serialize(fv reflect.Value) error {
 	if !fv.IsValid() {
-		return
+		return errors.New("invalid value")
 	}
 	rt := fv.Type()
 	stopIndex := uint16(rt.Size() + HEADER_SIZE)
@@ -133,7 +133,7 @@ func (p *Packet) serialize(fv reflect.Value) {
 
 	case reflect.Ptr:
 		if !fv.IsValid() {
-			return
+			return errors.New("invalid value pointer")
 		}
 		if fv.IsNil() || fv.IsZero() {
 			x := reflect.New(fv.Type().Elem())
@@ -153,6 +153,7 @@ func (p *Packet) serialize(fv reflect.Value) {
 		}
 
 	default:
-		fmt.Println("Decode unsuported reflect type", fv.Kind())
+		return fmt.Errorf("decode unsuported reflect type %s", fv.Kind())
 	}
+	return nil
 }
